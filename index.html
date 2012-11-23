@@ -1,0 +1,222 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>Qinhe - WandouLabs</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen"></head>
+	<style type="text/css">
+	body{
+		padding-top: 60px;
+		min-width: 960px;
+	}
+	.breadcrumb {
+		color: #777;
+	}
+	.title{
+		font-size: 20px; 
+		line-height: 20px; 
+		margin: 0 0 15px; 
+		color:#777; 
+		font-weight: 200;
+	}
+	.level-three-ul{
+		display: none;
+		list-style-type: disc;
+	}
+	.level-three-btn{
+		display: block;
+		padding: 5px 10px;
+		margin:3px 0;
+		color: #376881;
+	}
+	.level-three-ul li.active, .level-three-btn:hover{
+		background-color: rgba(0, 136, 204, 0.15);
+		border-radius: 3px;
+		text-decoration: none;
+	}
+	.alert-block{
+		font-size: 15px;
+	}
+	</style>
+<body>
+	<div id="navbar" class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container" style="width: auto;">
+				<h1 class="brand" style="margin:0;line-height:20px;">亲和图</h1>
+				<ol class="nav" role="navigation" id="topNav" ></ol>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span3">
+				<h2 class="title">Catalog</h2>
+				<ol class="nav nav-pills nav-stacked" id="leftNav"></ol>
+			</div>
+			<div class="span9">
+				<h2 class="title">Detail</h2>
+				<!-- <ul class="breadcrumb">
+				  <li class="breadLevel"></li>
+				  <li class="breadLevel"></li>
+				  <li class="breadLevel"></li>
+				  <li>内容</li>
+				</ul> -->
+				<div class="detail"></div>
+			</div>	
+		</div>
+	</div>
+	<!-- template begin-->
+	<script type="text/template" id="levelOneTemplate">
+		<li class="dropdown">
+			<a href="###" role="button" class="dropdown-toggle level-one-btn" data-toggle="dropdown" data-keyOne="{{keyOne}}" >{{name}}
+			</a>
+		</li>
+	</script>
+	<script type="text/template" id="levelTwoTemplate">
+		<li>
+			<a href="###" data-keyOne="{{key1}}" data-keyTwo="{{key2}}" class="level-two-btn" ></i>{{name}}</a>
+			<ol class="level-three-ul">
+				{{&levelThree}}
+			</ol>
+		</li>
+	</script>
+	<script type="text/template" id="levelThreeTemplate">
+		<li>
+			<a href="###" data-keyOne="{{key1}}" data-keyTwo="{{key2}}" data-keyThree="{{key3}}" class="level-three-btn">{{name}}</a>
+		</li>
+	</script>
+	<script type="text/template" id="levelFourTemplate">
+		{{#detail}}<div class="alert alert-block">{{&.}}</div>{{/detail}}
+	</script>
+	<!-- template end -->
+	<script src="js/res.js"></script>
+	<script src="js/jq.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/mustache.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+
+		var levelOne;
+		var levelOneName = {};
+		var levelOneHtml = "";
+		var levelOneTemplate = $('#levelOneTemplate').html();
+
+		for(levelOne in obj){
+
+			levelOneName = {
+				name: obj[levelOne].name,
+				keyOne: levelOne,
+			}
+			levelOneHtml += Mustache.to_html ( levelOneTemplate, levelOneName );
+
+		}
+
+		$('#topNav').append(levelOneHtml)
+					.find('a.level-one-btn')[0].click();
+
+	});
+
+	$('#topNav').on('click','.level-one-btn',function(){
+		
+		var levelOne = $(this).attr('data-keyOne');
+		var levelTwo;
+		var levelThree;
+		var levelThreeName = {};
+		var levelTwoName = {};
+		var levelThreeHtml = "";
+		var levelTwoHtml = "";
+		var levelThreeTemplate = $('#levelThreeTemplate').html();
+		var levelTwoTemplate = $('#levelTwoTemplate').html();
+
+		for(levelTwo in obj[levelOne]){
+
+			if(obj[levelOne][levelTwo].name){
+
+				for(levelThree in obj[levelOne][levelTwo]){
+					if(obj[levelOne][levelTwo][levelThree].name){
+						levelThreeName = {
+							name: obj[levelOne][levelTwo][levelThree].name,
+							key1: levelOne,
+							key2: levelTwo,
+							key3: levelThree,
+						}
+						levelThreeHtml += Mustache.to_html ( levelThreeTemplate, levelThreeName );
+					}
+				}
+
+				levelTwoName = {
+					name: obj[levelOne][levelTwo].name,
+					key1: levelOne,
+					key2: levelTwo,
+					levelThree: levelThreeHtml,
+				}
+				levelTwoHtml += Mustache.to_html ( levelTwoTemplate, levelTwoName );
+				levelThreeHtml = "";
+
+			}
+		}
+		$('#leftNav').html(levelTwoHtml);
+		$('.span3').find('.title').text($(this).text());
+
+	});
+
+	$('#leftNav').on('click','.level-two-btn',function(){
+
+		$('.level-three-ul').hide();
+		$(this).next('.level-three-ul').toggle();
+
+		$('#leftNav').find('li.active').removeClass('active');
+		$(this).parent().addClass('active');
+
+		// var keyOne = $(this).attr('data-keyOne');
+		// var keyTwo = $(this).attr('data-keyTwo');
+		// var levelThree;
+		// var levelThreeName = {};
+		// var levelThreeHtml = "";
+		// var levelThreeTemplate = $('#levelThreeTemplate').html();
+
+		// for(levelThree in obj[keyOne][keyTwo]){
+
+		// 	if(obj[keyOne][keyTwo][levelThree].name){
+		// 		levelThreeName = {
+		// 			name: obj[keyOne][keyTwo][levelThree].name,
+		// 			key1: keyOne,
+		// 			key2: keyTwo,
+		// 			key3: levelThree,
+		// 		}
+		// 		levelThreeHtml += Mustache.to_html ( levelThreeTemplate, levelThreeName );
+		// 	}
+
+		// }
+		// $('#leftNav').html(levelThreeHtml)
+		// 			 .find('a.level-three-btn')[0].click();
+		// $('#topNav').find('li.active').removeClass('active');
+		// $(this).parents('.dropdown').addClass('active');
+
+	})
+	$('#leftNav').on('click','.level-three-btn',function(){
+
+		var keyOne = $(this).attr('data-keyOne');
+		var keyTwo = $(this).attr('data-keyTwo');
+		var keyThree = $(this).attr('data-keyThree');
+		var levelFourTemplate = $('#levelFourTemplate').html();
+		var levelFourHtml = "";
+		var detail = {
+			detail: obj[keyOne][keyTwo][keyThree].detail.split("&&"),
+		}
+		var nameArray = [obj[keyOne].name,obj[keyOne][keyTwo].name,obj[keyOne][keyTwo][keyThree].name];
+
+		levelFourHtml += Mustache.to_html ( levelFourTemplate, detail );
+		$('.detail').html(levelFourHtml);
+
+		$('.level-three-ul').find('li.active').removeClass('active');
+		$(this).parent().addClass('active');
+
+		// $('.breadcrumb').find('.breadLevel').each(function(index,Element){
+		// 	$(this).text(nameArray[index] + " > ");
+		// })
+
+	})
+	</script>
+</body>
+</html>
